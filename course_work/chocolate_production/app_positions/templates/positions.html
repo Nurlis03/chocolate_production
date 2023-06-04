@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Positions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"
+        integrity="sha384-zYPOMqeu1DAVkHiLqWBUTcbYfZ8osu1Nd6Z89ify25QV9guujx43ITvfi12/QExE"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"
+        integrity="sha384-Y4oOpwW3duJdCWv5ly8SCFYWqFDsfob/3GkgExXKV4idmbt98QcxXYs9UoXAB7BZ"
+        crossorigin="anonymous"></script>
+    <style>
+        .btn-add {
+            margin: 10px 0px;
+        }
+
+        .container {
+            max-width: 500px;
+        }
+        th.act {
+            padding-left: 250px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1 mx-auto">Positions</span>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="table-responsive">
+            <button type="button" class="btn btn-primary btn-add" onclick="showModalAdd()">
+                Add Position
+            </button>
+            <table class="table table-striped mx-auto">
+                <thead>
+                    <tr>
+                        <th class="text-start">Position</th>
+                        <th class="act">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for position in positions %}
+                    <tr>
+                        <td class="align-middle">{{ position.1 }}</td>
+                        <td class="align-middle text-end">
+                            <a class="btn btn-primary" href="{% url 'position_update' position.0 %}?page={{ positions.number }}&show_modal=true">EDIT</a>
+                            <button class="btn btn-danger" onclick="showModalDelete('{{ position.0 }}')">DELETE</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+
+
+
+        {% if positions.has_other_pages %}
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if positions.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="sr-only">First</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ positions.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&lsaquo;</span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for i in positions.paginator.page_range %}
+                {% if positions.number == i %}
+                <li class="page-item active">
+                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                </li>
+                {% elif i > positions.number|add:'-4' and i < positions.number|add:'4' %} <li class="page-item">
+                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if positions.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ positions.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">&rsaquo;</span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ positions.paginator.num_pages }}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;</span>
+                            <span class="sr-only">Last</span>
+                        </a>
+                    </li>
+                    {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+
+        <a class="btn btn-primary" href="{% url 'index' %}">BACK TO HOME</a>
+    </div>
+
+    <!-- Модальное окно для обновления данных сырья -->
+    <div class="modal fade" id="UpdateModal" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="UpdateModalLabel">Edit position</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'position_update' 1 %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="hidden" name="page" value="{{ positions.number }}">
+                        <input type="hidden" value="{{position.0}}" id="position_id" name="position_id">
+                        <div class="form-group">
+                            <label for="name_position">Position:</label>
+                            <input type="text" required class="form-control" id="name_position" name="name_position"
+                                value="{{position.1}}">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения удаления должности -->
+    <div id="DeleteModal" class="modal fade" aria-labelledby="DeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="DeleteModalLabel">Confirm Deletion</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'position_delete' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="hidden" name="page" value="{{ positions.number }}">
+                        <input type="hidden" id="position_id_delete" name="position_id_delete">
+                        <p>Are you sure you want to delete this position?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">DELETE</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Модальное окно для добавления данных сырья -->
+    <div class="modal fade" id="AddPositionModal" tabindex="-1" role="dialog" aria-labelledby="AddPositionModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="AddPositionModalLabel">Add position</h4>
+                    <button type="submit" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        onclick="hideModal()"></button>
+                </div>
+                <form method="POST" action="{% url 'position_add' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="hidden" name="page" value="{{ positions.number }}">
+                        <div class="form-group">
+                            <label for="name_position">Position:</label>
+                            <input type="text" required class="form-control" id="name_position" name="name_position">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">ADD</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                            onclick="hideModal('AddPositionModal')">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        {% if show_modal %}
+        $(document).ready(function () {
+            $('#UpdateModal').modal('show');
+        });
+        {% endif %}
+
+        function showModalAdd() {
+            $('#AddPositionModal').modal('show');
+        }
+        function showModalDelete(position_id_delete) {
+            $("#position_id_delete").val(position_id_delete);
+            $("#DeleteModal").modal("show");
+        }
+    </script>
+</body>
+
+</html>

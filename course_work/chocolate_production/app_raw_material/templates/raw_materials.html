@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Raw Materials</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js" integrity="sha384-zYPOMqeu1DAVkHiLqWBUTcbYfZ8osu1Nd6Z89ify25QV9guujx43ITvfi12/QExE" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js" integrity="sha384-Y4oOpwW3duJdCWv5ly8SCFYWqFDsfob/3GkgExXKV4idmbt98QcxXYs9UoXAB7BZ" crossorigin="anonymous"></script>
+    <style>
+        .btn-add {
+            margin: 10px 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1 mx-auto">Raw materials</span>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="table-responsive">
+            <button type="button" class="btn btn-primary btn-add" onclick="showModalAdd()">
+                Add Raw material
+            </button>
+            <table class="table table-striped mx-auto">
+                <thead>
+                    <tr>
+                        <th>Raw material</th>
+                        <th>Unit</th>
+                        <th>Amount</th>
+                        <th>Cost amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for raw_material in raw_materials %}
+                    <tr>
+                        <td class="align-middle">{{ raw_material.1 }}</td>
+                        <td class="align-middle">{{ raw_material.2 }}</td>
+                        <td class="align-middle">{{ raw_material.3 }}</td>
+                        <td class="align-middle">{{ raw_material.4 }}</td>
+                        <td class="align-middle">
+                            <a class="btn btn-primary" href="{% url 'raw_material_update' raw_material.0 %}?page={{ raw_materials.number }}&show_modal=true">EDIT</a>
+                            <button class="btn btn-danger" onclick="showModalDelete('{{ raw_material.0 }}')">DELETE</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if raw_materials.has_other_pages %}
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                {% if raw_materials.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="sr-only">First</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ raw_materials.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&lsaquo;</span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for i in raw_materials.paginator.page_range %}
+                {% if raw_materials.number == i %}
+                <li class="page-item active">
+                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                </li>
+                {% elif i > raw_materials.number|add:'-4' and i < raw_materials.number|add:'4' %} <li class="page-item">
+                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if raw_materials.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ raw_materials.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">&rsaquo;</span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ raw_materials.paginator.num_pages }}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;</span>
+                            <span class="sr-only">Last</span>
+                        </a>
+                    </li>
+                    {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+
+        <a class="btn btn-primary" href="{% url 'index' %}">BACK TO HOME</a>
+    </div>
+
+    <!-- Модальное окно для обновления данных сырья -->
+    <div class="modal fade" id="UpdateModal" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="UpdateModalLabel">Edit raw material</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'raw_material_update' 1 %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="hidden" name="page" value="{{ raw_materials.number }}">
+                        <input type="hidden" value="{{raw_material.0}}" id="raw_material_id" name="raw_material_id">
+                        <div class="form-group">
+                            <label for="name_raw_material">Raw material:</label>
+                            <input type="text" required class="form-control" id="name_raw_material" name="name_raw_material" value="{{raw_material.1}}">
+                        </div>
+                        <div class="form-group">
+                            <label for="unit_id">Unit:</label>
+                            <select id="unit_id" name="unit_id" class="form-select" aria-label="Unit">
+                                {% for unit in units %}
+                                    {% if unit.0 == raw_material.2 %}
+                                        <option value="{{ unit.0 }}" selected>{{ unit.1 }}</option>
+                                    {% else %}
+                                        <option value="{{ unit.0 }}">{{ unit.1 }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>                        
+                        <div class="form-group">
+                            <label for="amount">Amount</label>
+                            <input type="number" step='any' min='0' required class="form-control" id="amount" name="amount" value="{{ raw_material.3 }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="cost_amount">Cost amount</label>
+                            <input type="number" step='any' min='1' required class="form-control" id="cost_amount" name="cost_amount" value="{{raw_material.4}}">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения удаления сырья -->
+    <div id="DeleteModal" class="modal fade" aria-labelledby="DeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content"> 
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="DeleteModalLabel">Confirm Deletion</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'delete_raw_material' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="hidden" name="page" value="{{ raw_materials.number }}">
+                        <input type="hidden" id="raw_material_id_delete" name="raw_material_id_delete">
+                        <p>Are you sure you want to delete this raw_material?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">DELETE</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Модальное окно для добавления данных сырья -->
+    <div class="modal fade" id="AddRaw_materialModal" tabindex="-1" role="dialog" aria-labelledby="AddRaw_materialModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="AddRaw_materialModalLabel">Add raw_material</h4>
+                    <button type="submit" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="hideModal()"></button>
+                </div>
+                <form method="POST" action="{% url 'add_raw_material' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <input type="hidden" name="page" value="{{ raw_materials.number }}">
+                        <div class="form-group">
+                            <label for="name_raw_material">Raw material:</label>
+                            <input type="text" required class="form-control" id="name_raw_material" name="name_raw_material">
+                        </div>
+                        <div class="form-group">
+                            <label for="unit_id">Unit:</label>
+                            <select id="unit_id" name="unit_id" class="form-select" aria-label="Unit">
+                                {% for unit in units %}
+                                    <option value="{{ unit.0 }}">{{ unit.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>                        
+                        <div class="form-group">
+                            <label for="amount">Amount</label>
+                            <input type="number" step='any' min='0' required class="form-control" id="amount" name="amount">
+                        </div>
+                        <div class="form-group">
+                            <label for="cost_amount">Cost amount</label>
+                            <input type="number" min='1' step='any' required class="form-control" id="cost_amount" name="cost_amount">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">ADD</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="hideModal('AddRaw_materialModal')">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        {% if show_modal %}
+            $(document).ready(function() {
+                $('#UpdateModal').modal('show');
+            });
+		{% endif %}
+        
+        function showModalAdd(){
+            $('#AddRaw_materialModal').modal('show');
+        }
+        function showModalDelete(raw_material_id_delete) {
+            $("#raw_material_id_delete").val(raw_material_id_delete);
+            $("#DeleteModal").modal("show");
+        }
+    </script>
+</body>
+
+</html>
