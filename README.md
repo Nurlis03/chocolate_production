@@ -41,6 +41,52 @@ Once `pip` has finished downloading the dependencies:
 
 5. Configuring the database:
 
+- Open the `database_files` folder, import the `PPO3-2-version.bak`, or `PPO3-2-version.bacpac` one of them in Microsoft SQL Server Management Studio.
+- Open  SQL Server Configuration Manager and follow these steps:
+    - Enable TCP/IP protocol.
+    - Set the port for TCP/IP protocol (port 1433 is usually used).
+- Configure database access for your Django project in a file settings.py
+  Specify the following parameters:
+```python
+     DATABASES = {
+        'default': {
+            'ENGINE': 'mssql',
+            'NAME': 'PPO3-2-version',
+            'USER': 'sa',
+            'PASSWORD': 'Nurlis2003',
+            'HOST': 'DESKTOP-VNGU8OG\\SQLEXPRESS',
+            'PORT': '1433',
+
+            'OPTIONS': {
+                'driver': 'ODBC Driver 17 for SQL Server',
+            },
+        },
+    }
+ ```
+
+6. Run the project:
+
 ```sh
 (env)$ cd chocolate_production
 (env)$ python manage.py runserver
+```
+
+## Functionality
+1. CRUD operations of 7 tables(Budget, Employee, Finished_products, Ingredients, Positions, Raw_material, Units)
+2. Purchase of raw materials
+3. Produce products
+4. Sale of products
+5. Showing the ingredients of the selected product
+
+## Project structure
+I have created separate applications for each table.
+
+Each application has views that render templates. 
+
+In view, I mainly used stored procedures that perform the corresponding operations in the database. 
+
+I also used pagination for 10 records, which allows for effective interaction with data.
+
+## Author 
+
+**------------------------------Kimbiletov Nurlis Muratovich*-----------------------------*
