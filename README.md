@@ -87,6 +87,10 @@ In view, I mainly used stored procedures that perform the corresponding operatio
 
 I also used pagination for 10 records, which allows for effective interaction with data.
 
+## Design of database
+
+![image](https://github.com/Nurlis03/course_work/assets/99631295/2ff846d7-a983-4275-be30-7680473894ca)
+
 ## Author 
 
 **------------------------------Kimbiletov Nurlis Muratovich*-----------------------------*
